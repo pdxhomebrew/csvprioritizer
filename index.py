@@ -19,6 +19,8 @@ with open(file_input, newline='') as csvfile:
 
     priorities = {i : 0 for i in unsorted}
     pairs = combinations(unsorted, 2)
+    for thing in pairs: 
+        print(thing)
     for i in list(pairs):
         choice = input("\n Choose between these two options: \n 1: {0} \n 2: {1} \n ".format(i[0], i[1]))
         while choice not in ["1", "2"]:
