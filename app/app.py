@@ -7,37 +7,41 @@ app = Flask(__name__)
 def prioritizer():
     print(file_reader())
     pairs = file_reader()
-    index = 0
-    options = []
-    for i, pair in enumerate(pairs):
-        if len(pair) == 2:
-            index = i
-            options = pair
-            button1 = options[0]
-            button2 = options[1]
-            break
     if request.method == "POST":
+        # figure out how to surface the next pair to each button
+        button1 = "A"
+        button2 = "B"
         if request.form.get("a"):
-            options.append(options[0])
-            print("You submitted a!")
+            choice = request.form.get("a")
+            position = 0
         elif request.form.get("b"):
-            options.append(options[1])
-            print("You submitted b!")
-        pairs[index] = options
-        save_csv(pairs)
+            choice = request.form.get("b")
+            position = 1
+        update(pairs, position, choice)
     elif request.method == "GET":
-        # check if we need to import options on GET everytime
-        button1 = None
-        button2 = None
-        print("You submitted nothing!")
+        options = []
+        for pair in pairs:
+            if len(pair) == 2:
+                options = pair
+                button1 = options[0]
+                button2 = options[1]
+                break
 
 
     return render_template("index.html", button1=button1, button2=button2,)
 
 
+def update(pairs, position, result):
+    for i, pair in enumerate(pairs):
+        if pair[position] == str(result) and len(pair) == 2:
+            pairs[i].append(result)
+            break
+    save_csv(pairs)
+
+
 def file_reader():
     with open("../pairs.csv", newline='') as csvfile:
-        reader = csv.reader(csvfile)
+        reader = csv.reader(csvfile, quoting = csv.QUOTE_NONE)
         data = []
         for row in reader:
             data.append(row)
@@ -48,4 +52,4 @@ def save_csv(priorities):
     with open("../pairs.csv", "w", newline="") as writefile:
         writer = csv.writer(writefile)
         for p in priorities:
-            writer.writerow([p])
+            writer.writerow(p)
