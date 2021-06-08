@@ -5,35 +5,33 @@ app = Flask(__name__)
 
 @app.route("/", methods=['GET', 'POST'])
 def prioritizer():
-    print(file_reader())
+    # refactor these four lines (tuple destructuring?)
     pairs = file_reader()
+    options = get_next_pair(pairs)
+    button1 = options[0]
+    button2 = options[1]
     if request.method == "POST":
-        # figure out how to surface the next pair to each button
-        button1 = "A"
-        button2 = "B"
         if request.form.get("a"):
             choice = request.form.get("a")
-            position = 0
         elif request.form.get("b"):
             choice = request.form.get("b")
-            position = 1
-        update(pairs, position, choice)
-    elif request.method == "GET":
-        options = []
-        for pair in pairs:
-            if len(pair) == 2:
-                options = pair
-                button1 = options[0]
-                button2 = options[1]
-                break
-
-
+        update(pairs, options, choice)
+        pairs = file_reader()
+        options = get_next_pair(pairs)
+        button1 = options[0]
+        button2 = options[1]
     return render_template("index.html", button1=button1, button2=button2,)
 
 
-def update(pairs, position, result):
+def get_next_pair(pairs):
+    for pair in pairs:
+        if len(pair) == 2:
+            return pair
+
+
+def update(pairs, options, result):
     for i, pair in enumerate(pairs):
-        if pair[position] == str(result) and len(pair) == 2:
+        if pair == options:
             pairs[i].append(result)
             break
     save_csv(pairs)
